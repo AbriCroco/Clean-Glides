@@ -1,0 +1,45 @@
+name: Build Clean Glides for macOS
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install build tools
+        run: |
+          brew install cmake ninja
+
+      - name: Configure CMake
+        run: |
+          cmake -S . -B build \
+            -G Xcode \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0
+
+      - name: Build plugins
+        run: |
+          cmake --build build \
+            --config Release \
+            --parallel 3
+
+      - name: Upload VST3 and AU plugins
+        uses: actions/upload-artifact@v4
+        with:
+          name: CleanGlides-macOS-Universal
+          path: |
+            build/CleanGlides_artefacts/Release/VST3/
+            build/CleanGlides_artefacts/Release/AU/
+          if-no-files-found: error
+          retention-days: 30
