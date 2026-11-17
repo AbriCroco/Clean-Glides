@@ -1,45 +1,128 @@
 name: Build Clean Glides for macOS
-
+ 
 on:
   workflow_dispatch:
   push:
     tags:
       - 'v*'
-
+ 
 jobs:
   build:
     runs-on: macos-15
-
+ 
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
         with:
           submodules: recursive
-
-      - name: Install build tools
-        run: |
-          brew install cmake ninja
-
+ 
       - name: Configure CMake
         run: |
           cmake -S . -B build \
             -G Xcode \
-            -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" \
             -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0
-
+ 
       - name: Build plugins
+        run: cmake --build build --config Release --parallel 3
+ 
+      - name: Locate plugin bundles
         run: |
-          cmake --build build \
-            --config Release \
-            --parallel 3
-
-      - name: Upload VST3 and AU plugins
+          set -euo pipefail
+          VST3=$(find build/CleanGlides_artefacts/Release/VST3 -maxdepth 1 -name "*.vst3" | head -n 1)
+          AU=$(find build/CleanGlides_MIDIFX_artefacts/Release/AU -maxdepth 1 -name "*.component" | head -n 1)
+          [ -n "$VST3" ] || { echo "VST3 bundle not found"; exit 1; }
+          [ -n "$AU" ]   || { echo "AU bundle not found"; exit 1; }
+          echo "VST3=$VST3" >> "$GITHUB_ENV"
+          echo "AU=$AU" >> "$GITHUB_ENV"
+ 
+      # Evidence step: check if the build already signs.
+      # If it says "already signed", this step can be deleted.
+      - name: Check signatures
+        run: |
+          set -euo pipefail
+          for bundle in "$VST3" "$AU"; do
+            echo "== $bundle"
+            lipo -archs "$bundle"/Contents/MacOS/*
+            if codesign --verify --deep --strict "$bundle" 2>/dev/null; then
+              echo "Already signed by the build."
+            else
+              echo "NOT signed by the build, applying ad-hoc signature."
+              codesign --force --deep --sign - --timestamp=none "$bundle"
+              codesign --verify --deep --strict "$bundle"
+            fi
+            codesign -dv "$bundle" 2>&1 | grep -E "Signature|Identifier" || true
+          done
+ 
+      - name: Validate AU with auval
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          PLIST="$AU/Contents/Info.plist"
+          TYPE=$(plutil -extract AudioComponents.0.type raw -o - "$PLIST")
+          SUBTYPE=$(plutil -extract AudioComponents.0.subtype raw -o - "$PLIST")
+          MANUFACTURER=$(plutil -extract AudioComponents.0.manufacturer raw -o - "$PLIST")
+          echo "type=$TYPE subtype=$SUBTYPE manufacturer=$MANUFACTURER"
+ 
+          mkdir -p "$HOME/Library/Audio/Plug-Ins/Components"
+          ditto "$AU" "$HOME/Library/Audio/Plug-Ins/Components/$(basename "$AU")"
+          killall -9 AudioComponentRegistrar 2>/dev/null || true
+ 
+          auval -v "$TYPE" "$SUBTYPE" "$MANUFACTURER"
+ 
+      - name: Create DMGs
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+ 
+          make_dmg() {
+            local bundle="$1"
+            local dest_label="$2"
+            local dest_path="$3"
+            local dmg_name="$4"
+ 
+            local name stage
+            name=$(basename "$bundle")
+            stage=$(mktemp -d)
+ 
+            ditto "$bundle" "$stage/$name"
+            ln -s "$dest_path" "$stage/$dest_label"
+ 
+            cat > "$stage/README.txt" <<EOF
+          INSTALL
+          1. Quit your DAW.
+          2. Open the dmg and drag "$name" onto the "$dest_label" shortcut.
+          3. Enter your administrator password when macOS asks.
+              If a plugin with the same name already exists, choose "Replace".
+          4. This plugin is not notarized by Apple. Open Terminal and run:
+              sudo xattr -dr com.apple.quarantine "$dest_path/$name"
+          EOF
+ 
+            for attempt in 1 2 3; do
+              hdiutil create \
+                -volname "CleanGlides $dest_label" \
+                -srcfolder "$stage" \
+                -ov -format UDZO \
+                "dist/$dmg_name" && break
+              echo "hdiutil failed (attempt $attempt), retrying..."
+              sleep 5
+            done
+            test -f "dist/$dmg_name"
+            rm -rf "$stage"
+          }
+ 
+          make_dmg "$VST3" "VST3 (drag plugin here)" \
+            "/Library/Audio/Plug-Ins/VST3" "CleanGlides-VST3.dmg"
+ 
+          make_dmg "$AU" "Components (drag plugin here)" \
+            "/Library/Audio/Plug-Ins/Components" "CleanGlides-AU.dmg"
+ 
+          ls -lh dist
+ 
+      - name: Upload DMGs
         uses: actions/upload-artifact@v4
         with:
           name: CleanGlides-macOS-Universal
-          path: |
-            build/CleanGlides_artefacts/Release/VST3/
-            build/CleanGlides_artefacts/Release/AU/
+          path: dist/*.dmg
           if-no-files-found: error
-          retention-days: 30
+          retention-days: 3
