@@ -65,10 +65,15 @@ CPMAddPackage(NAME JUCE
     GIT_TAG 9.0.5
 )
 
+set(CG_COMPANY "AbriCroco")
+set(CG_MANUFACTURER_CODE AbCr)
+set(CG_PLUGIN_CODE Cgld)
+
+# --- Target 1: VST3 (synth-flagged) ---------------------------
 juce_add_plugin(${PROJECT_NAME}
-    COMPANY_NAME "AbriCroco"
-    PLUGIN_MANUFACTURER_CODE AbCr
-    PLUGIN_CODE Pto
+    COMPANY_NAME ${CG_COMPANY}
+    PLUGIN_MANUFACTURER_CODE ${CG_MANUFACTURER_CODE}
+    PLUGIN_CODE ${CG_PLUGIN_CODE}
     BUNDLE_ID "com.abricroco.cleanglides"
     IS_SYNTH TRUE
     IS_MIDI_EFFECT FALSE
@@ -76,11 +81,36 @@ juce_add_plugin(${PROJECT_NAME}
     NEEDS_MIDI_OUTPUT TRUE
     EDITOR_WANTS_KEYBOARD_FOCUS FALSE
     COPY_PLUGIN_AFTER_BUILD FALSE
-    FORMATS AU VST3
+    FORMATS VST3
     PRODUCT_NAME "Clean Glides"
 )
 
-target_sources(${PROJECT_NAME} PRIVATE
+# --- Target 2: AU MIDI FX (for Logic's MIDI FX) -----------------------
+juce_add_plugin(${PROJECT_NAME}_MIDIFX
+    COMPANY_NAME ${CG_COMPANY}
+    PLUGIN_MANUFACTURER_CODE ${CG_MANUFACTURER_CODE}
+    PLUGIN_CODE ${CG_PLUGIN_CODE}
+    BUNDLE_ID "com.abricroco.cleanglides.midifx"
+    IS_SYNTH FALSE
+    IS_MIDI_EFFECT TRUE
+    NEEDS_MIDI_INPUT TRUE
+    NEEDS_MIDI_OUTPUT TRUE
+    EDITOR_WANTS_KEYBOARD_FOCUS FALSE
+    COPY_PLUGIN_AFTER_BUILD FALSE
+    FORMATS AU
+    PRODUCT_NAME "Clean Glides"
+)
+
+juce_add_binary_data(BinaryData SOURCES
+    assets/fonts/Monoton-Regular.ttf
+    assets/fonts/Orbitron-Regular.ttf
+    assets/fonts/Orbitron-Medium.ttf
+    assets/fonts/Orbitron-SemiBold.ttf
+    assets/fonts/Orbitron-Bold.ttf
+)
+
+foreach(target ${PROJECT_NAME} ${PROJECT_NAME}_MIDIFX)
+    target_sources(${target} PRIVATE
         source/PluginEditor.h
         source/PluginEditor.cpp
         source/PluginProcessor.h
@@ -94,32 +124,25 @@ target_sources(${PROJECT_NAME} PRIVATE
         source/KnobComponent.cpp
         source/LookAndFeel.h
         source/LookAndFeel.cpp
-)
+    )
 
-juce_add_binary_data(BinaryData SOURCES
-    assets/fonts/Monoton-Regular.ttf
-    assets/fonts/Orbitron-Regular.ttf
-    assets/fonts/Orbitron-Medium.ttf
-    assets/fonts/Orbitron-SemiBold.ttf
-    assets/fonts/Orbitron-Bold.ttf
-)
+    target_compile_definitions(${target} PUBLIC
+        JUCE_WEB_BROWSER=0
+        JUCE_USE_CURL=0
+        JUCE_VST3_CAN_REPLACE_VST2=0
+        JUCE_REPORT_APP_USAGE=0
+        JUCE_MODAL_LOOPS_PERMITTED=0
+        DONT_SET_USING_JUCE_NAMESPACE=1
+    )
 
-target_compile_definitions(${PROJECT_NAME} PUBLIC
-    JUCE_WEB_BROWSER=0
-    JUCE_USE_CURL=0
-    JUCE_VST3_CAN_REPLACE_VST2=0
-    JUCE_REPORT_APP_USAGE=0
-    JUCE_MODAL_LOOPS_PERMITTED=0
-    DONT_SET_USING_JUCE_NAMESPACE=1
-)
-
-target_link_libraries(${PROJECT_NAME}
-    PRIVATE
-        BinaryData
-        juce::juce_audio_utils
-        juce::juce_dsp
-    PUBLIC
-        juce_recommended_warning_flags
-        juce::juce_recommended_config_flags
-        juce::juce_recommended_lto_flags
-)
+    target_link_libraries(${target}
+        PRIVATE
+            BinaryData
+            juce::juce_audio_utils
+            juce::juce_dsp
+        PUBLIC
+            juce_recommended_warning_flags
+            juce::juce_recommended_config_flags
+            juce::juce_recommended_lto_flags
+    )
+endforeach()

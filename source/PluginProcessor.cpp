@@ -24,8 +24,13 @@
 #include "PluginEditor.h"
 
 PluginProcessor::PluginProcessor() :
-    AudioProcessor(BusesProperties()
-                       .withOutput("Output", juce::AudioChannelSet::stereo(), true)),
+    AudioProcessor(
+#if JucePlugin_IsMidiEffect
+        BusesProperties()
+#else
+        BusesProperties().withOutput("Output", juce::AudioChannelSet::stereo(), true)
+#endif
+    ),
     apvts(*this, nullptr, "Parameters", createParameterLayout()),
     zoneLayout(juce::MPEZone(juce::MPEZone::Type::lower, 15)),
     mpeInitMessage(juce::MPEMessages::setZoneLayout(zoneLayout))
@@ -36,7 +41,14 @@ const juce::String PluginProcessor::getName() const { return JucePlugin_Name; }
 
 bool PluginProcessor::acceptsMidi() const { return true; }
 bool PluginProcessor::producesMidi() const { return true; }
-bool PluginProcessor::isMidiEffect() const { return false; }
+bool PluginProcessor::isMidiEffect() const
+{
+#if JucePlugin_IsMidiEffect
+    return true;
+#else
+    return false;
+#endif
+}
 bool PluginProcessor::supportsMPE() const { return true; }
 
 double PluginProcessor::getTailLengthSeconds() const { return 0.0; }
@@ -53,10 +65,11 @@ void PluginProcessor::changeProgramName(int index, const juce::String& newName) 
 
 bool PluginProcessor::isBusesLayoutSupported(const BusesLayout& layouts) const
 {
-    if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
-        return false;
-
+#if JucePlugin_IsMidiEffect
     return true;
+#else
+    return layouts.getMainOutputChannelSet() == juce::AudioChannelSet::stereo();
+#endif
 }
 
 void PluginProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
