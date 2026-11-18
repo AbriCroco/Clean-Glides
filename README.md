@@ -102,9 +102,7 @@ For example, assuming a pitch bend range of 48 semitones in both Clean Glides an
 
 ### Illustrated example
 
-<p align="center">
-   <img width="2062" height="220" alt="splash-background" src=".github/attachments/readme-attachments/assigning-channel.png" />
-</p>
+https://github.com/user-attachments/assets/e3878215-242f-4354-a208-1b7c11af0733
 
 Above is an illustrated example of how your MIDI notes should be assigned to hear the glides.
 Each colour represents a different MIDI channel:
@@ -136,15 +134,6 @@ The notes do not overlap with the previous chord, so no gliding occurs. Each not
 #### Last chord
 
 Since the notes overlap with the previous chord, they glide from their respective anchor notes, just as they did in the second chord.
-
-To hear the glides in action, feel free to listen to the audio example below.
-
-<p align="center">
-  <audio controls preload="none">
-    <source src=".github/attachments/readme-attachments/example.mp3" type="audio/mpeg">
-    <a href=".github/attachments/readme-attachments/example.mp3">Download the audio example</a>
-  </audio>
-</p>
 
 ### Understanding the UI
 
