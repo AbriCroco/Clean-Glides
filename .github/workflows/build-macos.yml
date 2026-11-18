@@ -1,31 +1,31 @@
 name: Build Clean Glides for macOS
- 
+
 on:
   workflow_dispatch:
   push:
     tags:
       - 'v*'
- 
+
 jobs:
   build:
     runs-on: macos-15
- 
+
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
         with:
           submodules: recursive
- 
+
       - name: Configure CMake
         run: |
           cmake -S . -B build \
             -G Xcode \
             -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" \
             -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0
- 
+
       - name: Build plugins
         run: cmake --build build --config Release --parallel 3
- 
+
       - name: Locate plugin bundles
         run: |
           set -euo pipefail
@@ -35,7 +35,7 @@ jobs:
           [ -n "$AU" ]   || { echo "AU bundle not found"; exit 1; }
           echo "VST3=$VST3" >> "$GITHUB_ENV"
           echo "AU=$AU" >> "$GITHUB_ENV"
- 
+
       # Build already signs, if this changes, build fails
       - name: Verify signatures and architectures
         run: |
@@ -44,7 +44,7 @@ jobs:
             codesign --verify --deep --strict "$bundle"
             lipo -archs "$bundle"/Contents/MacOS/*
           done
- 
+
       - name: Validate AU with auval
         run: |
           set -euo pipefail
@@ -53,14 +53,12 @@ jobs:
           SUBTYPE=$(plutil -extract AudioComponents.0.subtype raw -o - "$PLIST")
           MANUFACTURER=$(plutil -extract AudioComponents.0.manufacturer raw -o - "$PLIST")
           echo "type=$TYPE subtype=$SUBTYPE manufacturer=$MANUFACTURER"
- 
+
           mkdir -p "$HOME/Library/Audio/Plug-Ins/Components"
           ditto "$AU" "$HOME/Library/Audio/Plug-Ins/Components/$(basename "$AU")"
           killall -9 AudioComponentRegistrar 2>/dev/null || true
- 
-          auval -v "$TYPE" "$SUBTYPE" "$MANUFACTURER"
- 
 
+          auval -v "$TYPE" "$SUBTYPE" "$MANUFACTURER"
 
       - name: Create DMGs
         run: |
@@ -100,8 +98,20 @@ jobs:
 
             mkdir -p "$stage/Licenses"
 
-            cp LICENSE "$stage/Licenses/"
-            cp THIRD_PARTY_LICENSES.md "$stage/Licenses/"
+            # LICENSE is shipped unchanged, only the extension is added.
+            cp LICENSE "$stage/Licenses/LICENSE.txt"
+
+            # THIRD_PARTY_LICENSES.md to plain text:
+            #   - strip <h1>..<h6> tags
+            #   - strip ** bold markers
+            #   - [text](url) -> text (url)
+            perl -pe 's{</?h[1-6]>}{}g; s/\*\*//g; s/\[([^\]]+)\]\(([^)]+)\)/$1 ($2)/g' \
+              THIRD_PARTY_LICENSES.md > "$stage/Licenses/THIRD_PARTY_LICENSES.txt"
+
+            if grep -qE '</?h[1-6]>|\*\*|\]\(' "$stage/Licenses/THIRD_PARTY_LICENSES.txt"; then
+              echo "::error::Markdown/HTML residue left in THIRD_PARTY_LICENSES.txt"
+              return 1
+            fi
 
             while IFS= read -r -d '' file; do
               filename=$(basename "$file")
@@ -115,13 +125,13 @@ jobs:
               cp "$file" "$destination"
             done < <(find "$LICENSE_SOURCE/assets/fonts/licenses" -type f -print0)
 
-            test -f "$stage/Licenses/LICENSE" || {
-              echo "::error::AGPLv3 LICENSE is missing from DMG"
+            test -f "$stage/Licenses/LICENSE.txt" || {
+              echo "::error::AGPLv3 LICENSE.txt is missing from DMG"
               return 1
             }
 
-            test -f "$stage/Licenses/THIRD_PARTY_LICENSES.md" || {
-              echo "::error::THIRD_PARTY_LICENSES.md is missing from DMG"
+            test -f "$stage/Licenses/THIRD_PARTY_LICENSES.txt" || {
+              echo "::error::THIRD_PARTY_LICENSES.txt is missing from DMG"
               return 1
             }
 
@@ -129,8 +139,8 @@ jobs:
               -type f | wc -l | tr -d ' ')
 
             COPIED_FONT_LICENSE_COUNT=$(find "$stage/Licenses" \
-              -maxdepth 1 -type f ! -name "LICENSE" \
-              ! -name "THIRD_PARTY_LICENSES.md" | wc -l | tr -d ' ')
+              -maxdepth 1 -type f ! -name "LICENSE.txt" \
+              ! -name "THIRD_PARTY_LICENSES.txt" | wc -l | tr -d ' ')
 
             if [ "$FONT_LICENSE_COUNT" -ne "$COPIED_FONT_LICENSE_COUNT" ]; then
               echo "::error::Font license count mismatch!"
@@ -219,7 +229,7 @@ jobs:
 
           The complete corresponding source code is available at:
 
-          https://github.com/AbriCroco/Clean-Glides/tree/v1.0.0
+          https://github.com/AbriCroco/Clean-Glides/tree/1.0.0
 
           This source code corresponds to version 1.0.0.
 
@@ -231,8 +241,8 @@ jobs:
 
           This includes:
 
-          - LICENSE (AGPLv3)
-          - THIRD_PARTY_LICENSES.md
+          - LICENSE.txt (AGPLv3)
+          - THIRD_PARTY_LICENSES.txt
           - All individual font license files.
 
           Please consult these documents for the complete licensing
@@ -244,7 +254,6 @@ jobs:
           ============================================================
           EOF
 
-            # Create compressed disk image, retrying if necessary.
             local created=false
 
             for attempt in 1 2 3; do
@@ -270,13 +279,11 @@ jobs:
             rm -rf "$stage"
           }
 
-          # VST3 installer.
           make_dmg "$VST3" \
             "VST3 (drag plugin here)" \
             "/Library/Audio/Plug-Ins/VST3" \
             "Clean Glides_VST3.dmg"
 
-          # AU installer.
           make_dmg "$AU" \
             "Components (drag plugin here)" \
             "/Library/Audio/Plug-Ins/Components" \
@@ -285,8 +292,6 @@ jobs:
           echo "Generated disk images:"
           ls -lh dist
 
-
- 
       - name: Upload DMGs
         uses: actions/upload-artifact@v4
         with:
