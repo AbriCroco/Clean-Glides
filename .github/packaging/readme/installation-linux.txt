@@ -23,7 +23,7 @@ OPTION A - INSTALL SCRIPT (RECOMMENDED)
   2. Extract this ZIP archive.
   3. Open a terminal in the extracted folder and run:
 
-       ./install.sh
+       bash install.sh
 
      This installs the plugin for your user only, in
      ~/.vst3 (no administrator rights needed). The script
@@ -32,7 +32,7 @@ OPTION A - INSTALL SCRIPT (RECOMMENDED)
 
      To install for all users instead, run:
 
-       ./install.sh --system
+       bash install.sh --system
 
      This installs to /usr/local/lib/vst3 and asks for
      your password (sudo).
@@ -43,9 +43,7 @@ OPTION A - INSTALL SCRIPT (RECOMMENDED)
 
       Options can be combined, for example:
 
-       ./install.sh --system --all
-
-     If the script is not executable, run: bash install.sh
+       bash install.sh --system --all
 
   4. Restart your DAW and rescan your plugins if needed.
 

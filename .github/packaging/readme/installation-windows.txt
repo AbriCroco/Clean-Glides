@@ -20,9 +20,9 @@ OPTION A - INSTALLER SCRIPT (RECOMMENDED)
      (right-click it, then "Extract All...").
      Do not run the installer from inside the ZIP.
   3. Double-click "Install.bat".
-  4. Accept the administrator prompt. Windows needs it to
-     write to the system VST3 folder.
-  5. Restart your DAW and rescan your plugins if needed.
+  4. When prompted click on "Run".
+  5. Press on any key to exit the terminal.
+  6. Restart your DAW and rescan your plugins if needed.
 
   The script copies "Clean Glides.vst3" to:
 

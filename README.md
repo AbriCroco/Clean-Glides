@@ -27,7 +27,7 @@ This creates a smooth and continuous glide effect (portamento) between notes.
 
 ### Windows 10 and above
 - Head over to the [release section](https://github.com/AbriCroco/Clean-Glides/releases) and download the latest windows-specific .zip archive.
-- Unzip the archive, double-click on `Install.bat` and accept the administrator's prompt.
+- Unzip the archive, double-click on `Install.bat` and click on **Run** when prompted.
 - Restart your DAW and rescan your plugin list as per usual when installing a new plugin.
 - That's it! You're now all set to use Clean Glides.
 
@@ -47,7 +47,7 @@ Please read the included `README.txt` section `2. macOS SECURITY NOTICE - QUARAN
 ### Linux glibc 2.35 and above
 - Head over to the [release section](https://github.com/AbriCroco/Clean-Glides/releases) and download the latest linux-specific .zip archive.
 - Unzip the archive, and open a terminal in the extracted folder.
-- Run `./install.sh` to install the plugin for your user only, or `./install.sh --system` to install it for all users.
+- Run `bash install.sh` to install the plugin for your user only, or `bash install.sh --system` to install it for all users.
 - Restart your DAW and rescan your plugin list as per usual when installing a new plugin.
 - That's it! You're now all set to use Clean Glides.
 
