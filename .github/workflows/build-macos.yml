@@ -162,6 +162,9 @@ jobs:
                   -e "s|@DESTLABEL@|$dest_label|g" \
                   -e "s|@DESTPATH@|$dest_path|g" \
                   "$README_DIR/installation-macos.txt"
+
+              echo ""
+
               sed -e "s|@VERSION@|$VERSION|g" \
                   -e "s|@SECTION@|3|g" \
                   -e "s|@CONTAINER@|disk image|g" \

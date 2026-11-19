@@ -36,7 +36,7 @@ jobs:
             build-essential ca-certificates cmake file git ninja-build pkg-config \
             libasound2-dev libfontconfig1-dev libfreetype-dev \
             libx11-dev libxcomposite-dev libxcursor-dev libxext-dev \
-            libxinerama-dev libxrandr-dev libxrender-dev
+            libxi-dev libxinerama-dev libxrandr-dev libxrender-dev
 
       - name: Checkout source
         uses: actions/checkout@v4
