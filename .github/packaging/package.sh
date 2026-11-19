@@ -121,6 +121,7 @@ esac
 
 # --- 2b. README = installation part + licensing part ------------------------
 sed "s/@ARCHS@/$ARCHS/g" "$HERE/readme/installation-$OS_KEY.txt" > "$STAGE/README.txt"
+echo "" >> "$STAGE/README.txt"
 sed -e "s/@VERSION@/$VERSION/g" -e "s/@SECTION@/2/g" -e "s/@CONTAINER@/archive/g" \
   "$HERE/readme/licensing.txt" >> "$STAGE/README.txt"
 

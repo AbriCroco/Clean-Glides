@@ -71,4 +71,3 @@ REMOVE THE QUARANTINE ATTRIBUTE:
   globally.
 
   5. Restart your DAW after completing these steps.
-  
