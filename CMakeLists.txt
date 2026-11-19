@@ -85,21 +85,27 @@ juce_add_plugin(${PROJECT_NAME}
     PRODUCT_NAME "Clean Glides"
 )
 
-# --- Target 2: AU MIDI FX (for Logic's MIDI FX) -----------------------
-juce_add_plugin(${PROJECT_NAME}_MIDIFX
-    COMPANY_NAME ${CG_COMPANY}
-    PLUGIN_MANUFACTURER_CODE ${CG_MANUFACTURER_CODE}
-    PLUGIN_CODE ${CG_PLUGIN_CODE}
-    BUNDLE_ID "com.abricroco.cleanglides.midifx"
-    IS_SYNTH FALSE
-    IS_MIDI_EFFECT TRUE
-    NEEDS_MIDI_INPUT TRUE
-    NEEDS_MIDI_OUTPUT TRUE
-    EDITOR_WANTS_KEYBOARD_FOCUS FALSE
-    COPY_PLUGIN_AFTER_BUILD FALSE
-    FORMATS AU
-    PRODUCT_NAME "Clean Glides"
-)
+set(CG_TARGETS ${PROJECT_NAME})
+
+# --- Target 2: AU MIDI FX (for Logic's MIDI FX) ----------------------
+# Guard it so it runs only on macOS.
+if(APPLE)
+    juce_add_plugin(${PROJECT_NAME}_MIDIFX
+        COMPANY_NAME ${CG_COMPANY}
+        PLUGIN_MANUFACTURER_CODE ${CG_MANUFACTURER_CODE}
+        PLUGIN_CODE ${CG_PLUGIN_CODE}
+        BUNDLE_ID "com.abricroco.cleanglides.midifx"
+        IS_SYNTH FALSE
+        IS_MIDI_EFFECT TRUE
+        NEEDS_MIDI_INPUT TRUE
+        NEEDS_MIDI_OUTPUT TRUE
+        EDITOR_WANTS_KEYBOARD_FOCUS FALSE
+        COPY_PLUGIN_AFTER_BUILD FALSE
+        FORMATS AU
+        PRODUCT_NAME "Clean Glides"
+    )
+    list(APPEND CG_TARGETS ${PROJECT_NAME}_MIDIFX)
+endif()
 
 juce_add_binary_data(BinaryData SOURCES
     assets/fonts/Monoton-Regular.ttf
@@ -109,7 +115,7 @@ juce_add_binary_data(BinaryData SOURCES
     assets/fonts/Orbitron-Bold.ttf
 )
 
-foreach(target ${PROJECT_NAME} ${PROJECT_NAME}_MIDIFX)
+foreach(target ${CG_TARGETS})
     target_sources(${target} PRIVATE
         source/PluginEditor.h
         source/PluginEditor.cpp

@@ -1,0 +1,4 @@
+packaging/** text eol=lf
+*.sh text eol=lf
+*.yml text eol=lf
+.gitattributes text eol=lf

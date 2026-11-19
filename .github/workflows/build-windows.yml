@@ -1,0 +1,91 @@
+name: Build Clean Glides for Windows
+
+on:
+  workflow_dispatch:
+
+jobs:
+  # x64 is required, native ARM64 is optional (its failure does not block packaging).
+  build:
+    name: Build ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    continue-on-error: ${{ matrix.optional }}
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x64
+            runner: windows-2022
+            cmake_arch: x64
+            optional: false
+          - arch: arm64
+            runner: windows-11-arm
+            cmake_arch: ARM64
+            optional: true
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Configure CMake
+        run: cmake -S . -B build -G "Visual Studio 17 2022" -A ${{ matrix.cmake_arch }}
+
+      - name: Build plugin
+        run: cmake --build build --config Release --parallel 4
+
+      - name: Locate plugin bundle
+        run: |
+          set -euo pipefail
+          BUNDLE=$(find build -type d -name "*.vst3" -not -path "*/Contents/*" | head -n 1)
+          [ -n "$BUNDLE" ] || { echo "VST3 bundle not found"; exit 1; }
+          echo "BUNDLE=$BUNDLE" >> "$GITHUB_ENV"
+
+      - name: Verify bundle layout
+        run: |
+          set -euo pipefail
+          find "$BUNDLE" -type f
+          # Contents/<arch>-win/<name>.vst3 must exist (the actual DLL)
+          find "$BUNDLE/Contents" -mindepth 2 -maxdepth 2 -type f -name "*.vst3" | grep -q .
+
+      - name: Stage bundle
+        run: |
+          set -euo pipefail
+          mkdir -p stage
+          cp -R "$BUNDLE" stage/
+
+      - name: Upload bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: vst3-windows-${{ matrix.arch }}
+          path: stage
+          if-no-files-found: error
+          retention-days: 1
+
+  package:
+    name: Package
+    needs: build
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Download bundles
+        uses: actions/download-artifact@v4
+        with:
+          pattern: vst3-windows-*
+          path: in
+
+      - name: Package
+        run: bash .github/packaging/package.sh windows in dist
+
+      - name: Upload ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: CleanGlides-Windows
+          path: dist/*.zip
+          if-no-files-found: error
+          retention-days: 3
