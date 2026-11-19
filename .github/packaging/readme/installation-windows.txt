@@ -1,0 +1,82 @@
+============================================================
+
+                        CLEAN GLIDES
+               WINDOWS INSTALLATION GUIDE
+
+============================================================
+
+1. INSTALLATION
+------------------------------------------------------------
+
+Format:        VST3
+Architectures: @ARCHS@ (Windows 10 or 11)
+               Your DAW automatically loads the matching build.
+Requirements:  A VST3-compatible DAW.
+
+OPTION A - INSTALLER SCRIPT (RECOMMENDED)
+
+  1. Close your DAW.
+  2. Extract the whole ZIP archive
+     (right-click it, then "Extract All...").
+     Do not run the installer from inside the ZIP.
+  3. Double-click "Install.bat".
+  4. Accept the administrator prompt. Windows needs it to
+     write to the system VST3 folder.
+  5. Restart your DAW and rescan your plugins if needed.
+
+  The script copies "Clean Glides.vst3" to:
+
+       C:\Program Files\Common Files\VST3
+
+  An existing version is replaced.
+
+  On a regular x64 PC, only the x64 build is installed.
+  On an ARM PC, every build is installed, because most DAWs
+  on ARM PCs are x64 programs that need the x64 build.
+
+OPTION B - MANUAL INSTALLATION
+
+  1. Close your DAW.
+  2. Extract the whole ZIP archive.
+  3. OPTIONAL - remove the build you do not need. It only
+     takes a little disk space and is never used. What
+     matters is the type of your DAW, not only your PC.
+
+     Check your PC: open Settings > System > About and read
+     "System type".
+
+     x64-based processor:
+       Delete the folder
+       "Clean Glides.vst3\Contents\arm64-win"
+
+     ARM-based processor:
+       You need to confirm the architecture used by your
+       DAW. To do so: in Task Manager, open the "Details"
+       tab, right-click a column header, choose
+       "Select columns" and tick "Architecture" if it is
+       available. If your DAW shows "ARM64", you may delete
+       "Clean Glides.vst3\Contents\x86_64-win". If it shows
+       "x64", you may delete the other folder:
+       "Clean Glides.vst3\Contents\arm64-win".
+
+     If you are unsure, keep both: it works either way.
+  4. Copy the entire "Clean Glides.vst3" folder to:
+
+       C:\Program Files\Common Files\VST3
+
+  5. If prompted, choose "Replace" to overwrite an older
+     version, and confirm the administrator prompt.
+  6. Restart your DAW and rescan your plugins if needed.
+
+NOTES
+
+  - Copy the whole folder, not only the file inside it.
+  - Clean Glides is not code-signed. Windows SmartScreen
+    may warn you when you run "Install.bat". If you trust
+    this download, choose "More info" then "Run anyway",
+    or use the manual installation instead.
+  - If your DAW does not find the plugin, check that its
+    VST3 search paths include the folder above.
+  - To uninstall, delete the folder:
+
+       C:\Program Files\Common Files\VST3\Clean Glides.vst3

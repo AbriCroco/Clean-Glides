@@ -1,0 +1,122 @@
+name: Build Clean Glides for Linux
+
+on:
+  workflow_dispatch:
+
+jobs:
+  # x86_64 is required, aarch64 is optional.
+  build:
+    name: Build ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    continue-on-error: ${{ matrix.optional }}
+    container: ubuntu:22.04
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86_64
+            runner: ubuntu-24.04
+            file_arch: "x86-64"
+            optional: false
+          - arch: aarch64
+            runner: ubuntu-24.04-arm
+            file_arch: "ARM aarch64"
+            optional: true
+
+    steps:
+      - name: Install build dependencies
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            build-essential ca-certificates cmake file git ninja-build pkg-config \
+            libasound2-dev libfontconfig1-dev libfreetype-dev \
+            libx11-dev libxcomposite-dev libxcursor-dev libxext-dev \
+            libxinerama-dev libxrandr-dev libxrender-dev
+
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Configure CMake
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build plugin
+        run: cmake --build build --parallel
+
+      - name: Locate plugin bundle
+        run: |
+          set -euo pipefail
+          BUNDLE=$(find build -type d -name "*.vst3" -not -path "*/Contents/*" | head -n 1)
+          [ -n "$BUNDLE" ] || { echo "VST3 bundle not found"; exit 1; }
+          echo "BUNDLE=$BUNDLE" >> "$GITHUB_ENV"
+
+      - name: Strip debug info
+        run: |
+          set -euo pipefail
+          find "$BUNDLE/Contents" -name "*.so" -exec strip --strip-debug {} +
+
+      - name: Verify architecture and dependencies
+        env:
+          ARCH: ${{ matrix.arch }}
+          FILE_ARCH: ${{ matrix.file_arch }}
+        run: |
+          set -euo pipefail
+          SO=$(find "$BUNDLE/Contents/${ARCH}-linux" -name "*.so" | head -n 1)
+          [ -n "$SO" ] || { echo "No .so found in Contents/${ARCH}-linux"; exit 1; }
+
+          file "$SO"
+          file "$SO" | grep -q "$FILE_ARCH"
+
+          ldd "$SO"
+          if ldd "$SO" | grep -q "not found"; then
+            echo "::error::Unresolved shared library dependencies"
+            exit 1
+          fi
+
+          echo "Highest glibc version required:"
+          objdump -T "$SO" | grep -o 'GLIBC_[0-9.]*' | sort -uV | tail -n 1
+
+      - name: Stage bundle
+        run: |
+          set -euo pipefail
+          mkdir -p stage
+          cp -R "$BUNDLE" stage/
+
+      - name: Upload bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: vst3-linux-${{ matrix.arch }}
+          path: stage
+          if-no-files-found: error
+          retention-days: 1
+
+  package:
+    name: Package
+    needs: build
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Download bundles
+        uses: actions/download-artifact@v4
+        with:
+          pattern: vst3-linux-*
+          path: in
+
+      - name: Package
+        run: bash .github/packaging/package.sh linux in dist
+
+      - name: Upload ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: CleanGlides-Linux
+          path: dist/*.zip
+          if-no-files-found: error
+          retention-days: 3

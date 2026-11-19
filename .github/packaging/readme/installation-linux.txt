@@ -1,0 +1,90 @@
+============================================================
+
+                        CLEAN GLIDES
+                LINUX INSTALLATION GUIDE
+
+============================================================
+
+1. INSTALLATION
+------------------------------------------------------------
+
+Format:        VST3
+Architectures: @ARCHS@ (64-bit Linux)
+               Your DAW automatically loads the matching build.
+Requirements:  glibc 2.35 or newer (for example Ubuntu 22.04
+               or newer, Debian 12 or newer) and the usual
+               desktop libraries: ALSA, FreeType, Fontconfig
+               and X11. They are normally already present on
+               any system used for audio production.
+
+OPTION A - INSTALL SCRIPT (RECOMMENDED)
+
+  1. Close your DAW.
+  2. Extract this ZIP archive.
+  3. Open a terminal in the extracted folder and run:
+
+       ./install.sh
+
+     This installs the plugin for your user only, in
+     ~/.vst3 (no administrator rights needed). The script
+     detects your processor and installs only the build
+     that matches it.
+
+     To install for all users instead, run:
+
+       ./install.sh --system
+
+     This installs to /usr/local/lib/vst3 and asks for
+     your password (sudo).
+
+     To keep every build included in this archive, add:
+
+       --all
+
+      Options can be combined, for example:
+
+       ./install.sh --system --all
+
+     If the script is not executable, run: bash install.sh
+
+  4. Restart your DAW and rescan your plugins if needed.
+
+OPTION B - MANUAL INSTALLATION
+
+  1. Close your DAW.
+  2. Extract this ZIP archive.
+  3. OPTIONAL - remove the build you do not need. Your DAW
+     only uses the build matching your processor, so the
+     other one just takes a little disk space. Check your
+     processor in a terminal:
+
+       uname -m
+
+     x86_64   ->  delete the folder
+                  "Clean Glides.vst3/Contents/aarch64-linux"
+     aarch64  ->  delete the folder
+                  "Clean Glides.vst3/Contents/x86_64-linux"
+
+     If you are unsure, keep both: it works either way.
+  4. Copy the entire "Clean Glides.vst3" folder to one of
+     the standard VST3 locations, for example:
+
+       mkdir -p ~/.vst3
+       cp -R "Clean Glides.vst3" ~/.vst3/
+
+     Other locations scanned by most DAWs:
+
+       /usr/local/lib/vst3
+       /usr/lib/vst3
+
+  5. Restart your DAW and rescan your plugins if needed.
+
+NOTES
+
+  - Copy the whole folder, not only the file inside it.
+  - An existing version is replaced.
+  - If your DAW does not find the plugin, check that its
+    VST3 search paths include the folder you installed to.
+  - To uninstall, delete the folder:
+
+       rm -rf ~/.vst3/"Clean Glides.vst3"

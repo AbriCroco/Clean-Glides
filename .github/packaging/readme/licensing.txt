@@ -1,0 +1,30 @@
+@SECTION@. OPEN-SOURCE SOFTWARE AND LICENSING
+------------------------------------------------------------
+ 
+Clean Glides is open-source software licensed under AGPLv3.
+ 
+The complete corresponding source code is available at:
+ 
+https://github.com/AbriCroco/Clean-Glides/tree/@VERSION@
+ 
+This source code corresponds to version @VERSION@.
+ 
+This distribution also includes third-party software and
+fonts, which may be subject to their own licensing terms.
+ 
+All relevant license documents are included in the
+"Licenses" folder at the root of this @CONTAINER@.
+ 
+This includes:
+ 
+- LICENSE.txt (AGPLv3)
+- THIRD_PARTY_LICENSES.txt
+- All individual font license files.
+ 
+Please consult these documents for the complete licensing
+terms and attribution requirements.
+ 
+============================================================
+               THANK YOU FOR USING
+                  CLEAN GLIDES
+============================================================

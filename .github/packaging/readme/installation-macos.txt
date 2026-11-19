@@ -1,0 +1,74 @@
+============================================================
+
+                        CLEAN GLIDES
+                macOS INSTALLATION GUIDE
+
+============================================================
+
+1. INSTALLATION
+------------------------------------------------------------
+
+Format:        @FORMAT@
+Architectures: @ARCHS@ (macOS @MINOS@ or newer)
+               Your DAW automatically loads the matching build.
+Requirements:  A DAW that supports @FORMAT@ plugins.
+
+  1. Close your DAW (Digital Audio Workstation).
+  2. Open this disk image.
+  3. Drag "@NAME@" onto the "@DESTLABEL@" shortcut.
+  4. If prompted, choose "Replace" to overwrite an older version.
+  5. macOS quarantine removal may be necessary for the plugin
+     to work. Please read the Security Notice below to learn
+     how to proceed.
+  6. Restart your DAW.
+
+2. macOS SECURITY NOTICE - QUARANTINE
+------------------------------------------------------------
+
+IMPORTANT: This release is not notarized by Apple.
+
+macOS uses Gatekeeper and quarantine metadata to help protect
+your computer from potentially unsafe downloaded software.
+
+Because Clean Glides is not notarized, macOS may prevent the
+plugin from loading.
+
+If you have independently verified that you trust this
+software and obtained it from the official Clean Glides
+distribution, you may choose to remove its quarantine
+metadata.
+
+SECURITY DISCLAIMER:
+
+Removing quarantine metadata bypasses an additional macOS
+security check. It does NOT verify the software, establish
+its integrity, or guarantee that it is safe.
+
+Only proceed if you understand and accept this risk.
+Never execute commands from an untrusted source.
+
+HOW TO OPEN TERMINAL:
+
+  1. Press Command (⌘) + Space on your keyboard.
+  2. Type "Terminal".
+  3. Press Return.
+
+REMOVE THE QUARANTINE ATTRIBUTE:
+
+  1. Copy and paste the following command into Terminal:
+
+       sudo xattr -dr com.apple.quarantine "@DESTPATH@/@NAME@"
+
+  2. Press Return.
+  3. macOS will request your administrator password.
+  4. Enter your password and press Return.
+
+  NOTE: Terminal does not display characters while you type
+  your password. This is normal.
+
+  This command removes quarantine metadata recursively from
+  this plugin bundle only. It does not disable Gatekeeper
+  globally.
+
+  5. Restart your DAW after completing these steps.
+  

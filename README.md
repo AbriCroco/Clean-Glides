@@ -26,20 +26,32 @@ This creates a smooth and continuous glide effect (portamento) between notes.
 ## How To Install
 
 ### Windows 10 and above
-- Head over to the [release section](https://github.com/AbriCroco/Clean-Glides/releases) and download the latest .zip file for your specific OS architecture.
-- Unzip the file and place the file named `Clean Glides.vst3` in your VST3 folder (usually C:\Program Files\Common Files\VST3).
+- Head over to the [release section](https://github.com/AbriCroco/Clean-Glides/releases) and download the latest windows-specific .zip archive.
+- Unzip the archive, double-click on `Install.bat` and accept the administrator's prompt.
 - Restart your DAW and rescan your plugin list as per usual when installing a new plugin.
 - That's it! You're now all set to use Clean Glides.
 
+For more detailed installation guidance, open the `README.txt` inside the .zip archive.
+
 ### macOS 11.0 and above
-- Head over to the [release section](https://github.com/AbriCroco/Clean-Glides/releases) and download the macOS-specific .zip file.
-- Unzip the file and double click on the .dmg file for your desired version of the plugin (AU for Logic, VST3 for other DAWs).
+- Head over to the [release section](https://github.com/AbriCroco/Clean-Glides/releases) and download the latest macOS-specific .zip archive.
+- Double-click on the .zip archive to unzip it.
+- Double-click on the .dmg file for your desired version of the plugin (AU for Logic, VST3 for other DAWs).
 - Drag and drop the file (`Clean Glides.component` for AU / `Clean Glides.vst3` for VST3) into the folder indicated by the shortcut.
 
-**IMPORTANT NOTE:** As this plugin is not notarized by Apple, you will most likely need to manually authorize it on your Mac to be to able use it.
-For a smoother experience, I would recommend doing so before attempting to restart and use it in your DAW, but you can freely do so at any point.
+**IMPORTANT NOTE:** As this plugin is not notarized by Apple, you will most likely need to manually authorize it on your Mac to be able to use it.
+For a smoother experience, I would recommend doing so before attempting to restart your DAW and use the plugin, but you can freely do so at any point.
 
 Please read the included `README.txt` section `2. macOS SECURITY NOTICE - QUARANTINE` to fully understand why this step is necessary, what it means and how to achieve it.
+
+### Linux glibc 2.35 and above
+- Head over to the [release section](https://github.com/AbriCroco/Clean-Glides/releases) and download the latest linux-specific .zip archive.
+- Unzip the archive, and open a terminal in the extracted folder.
+- Run `./install.sh` to install the plugin for your user only, or `./install.sh --system` to install it for all users.
+- Restart your DAW and rescan your plugin list as per usual when installing a new plugin.
+- That's it! You're now all set to use Clean Glides.
+
+For more detailed installation guidance, open the `README.txt` inside the .zip archive.
 
 ## How To Use
 
@@ -164,7 +176,7 @@ AI's role in the development of this plugin was strictly consultative. No code i
 Every snippet of code written by AI was consistently read, understood, challenged and manually modified as needed before it was used.
 
 With that in mind, AI help for the development of this plugin was only used for some complex geometric calculations, verify and fix bugs, understand Logic's limitations and implement a working Logic specific version of the plugin.
-AI also helped with reworking the CMake file, licensing and complying with the AGPL-3.0 specifications, building the workflows to distribute the plugin on macOS.
+AI also helped with reworking the CMake file, licensing and complying with the AGPL-3.0 specifications and building the workflows and scripts to distribute and package the plugin on all platforms.
 
 ## License
 
