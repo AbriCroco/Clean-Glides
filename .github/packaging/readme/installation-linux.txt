@@ -39,7 +39,11 @@ OPTION A - INSTALL SCRIPT (RECOMMENDED)
 
      To keep every build included in this archive, add:
 
-       ./install.sh --all
+       --all
+
+      Options can be combined, for example:
+
+       ./install.sh --system --all
 
      If the script is not executable, run: bash install.sh
 

@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # Packages a Clean Glides VST3 build for Linux or Windows.
 #
 # What it does:
